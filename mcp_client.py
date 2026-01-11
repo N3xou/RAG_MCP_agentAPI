@@ -63,3 +63,9 @@ class MCPClient:
 
     def is_connected(self) -> bool:
         return self.process is not None and self.process.poll() is None
+
+    def disconnect(self):
+        """Close MCP server connection"""
+        if self.process:
+            self.process.terminate()
+            self.process = None
