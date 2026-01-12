@@ -1,0 +1,162 @@
+{
+  "summary": {
+    "total_queries": 10,
+    "correct": 0,
+    "incorrect": 10,
+    "accuracy": 0.0
+  },
+  "category_stats": {
+    "deployment": {
+      "correct": 0,
+      "total": 2
+    },
+    "incident": {
+      "correct": 0,
+      "total": 2
+    },
+    "maintenance": {
+      "correct": 0,
+      "total": 2
+    },
+    "monitoring": {
+      "correct": 0,
+      "total": 2
+    },
+    "backup": {
+      "correct": 0,
+      "total": 2
+    }
+  },
+  "detailed_results": [
+    {
+      "query": "What is the production deployment procedure?",
+      "expected": "deployment_procedure.md",
+      "retrieved": [
+        "Deployment_guidelines.md",
+        "Configuration_management.md",
+        "Change_management.md",
+        "Security_patching.md"
+      ],
+      "correct": false,
+      "category": "deployment",
+      "num_citations": 4
+    },
+    {
+      "query": "What are the incident severity levels?",
+      "expected": "incident_management.md",
+      "retrieved": [
+        "Incident_response.md",
+        "grading.md",
+        "Disaster_recovery.md",
+        "Monitoring_alerting.md"
+      ],
+      "correct": false,
+      "category": "incident",
+      "num_citations": 4
+    },
+    {
+      "query": "How often should we perform server maintenance?",
+      "expected": "server_maintenance.md",
+      "retrieved": [
+        "Backup_recovery.md",
+        "Security_patching.md",
+        "Logging_audit.md",
+        "Configuration_management.md"
+      ],
+      "correct": false,
+      "category": "maintenance",
+      "num_citations": 4
+    },
+    {
+      "query": "What are the key monitoring metrics we should track?",
+      "expected": "monitoring.md",
+      "retrieved": [
+        "Monitoring_alerting.md",
+        "Logging_audit.md",
+        "Configuration_management.md",
+        "Security_patching.md"
+      ],
+      "correct": false,
+      "category": "monitoring",
+      "num_citations": 4
+    },
+    {
+      "query": "What is our backup retention policy?",
+      "expected": "backup_policy.md",
+      "retrieved": [
+        "Backup_recovery.md",
+        "Logging_audit.md",
+        "Disaster_recovery.md",
+        "attendence.md"
+      ],
+      "correct": false,
+      "category": "backup",
+      "num_citations": 4
+    },
+    {
+      "query": "What is the rollback procedure if deployment fails?",
+      "expected": "deployment_procedure.md",
+      "retrieved": [
+        "Deployment_guidelines.md",
+        "Configuration_management.md",
+        "Security_patching.md",
+        "Backup_recovery.md"
+      ],
+      "correct": false,
+      "category": "deployment",
+      "num_citations": 4
+    },
+    {
+      "query": "What is the response time for critical incidents?",
+      "expected": "incident_management.md",
+      "retrieved": [
+        "Incident_response.md",
+        "Monitoring_alerting.md",
+        "Disaster_recovery.md",
+        "regrading.md"
+      ],
+      "correct": false,
+      "category": "incident",
+      "num_citations": 4
+    },
+    {
+      "query": "When is the production maintenance window?",
+      "expected": "server_maintenance.md",
+      "retrieved": [
+        "Security_patching.md",
+        "Deployment_guidelines.md",
+        "Incident_response.md",
+        "Change_management.md"
+      ],
+      "correct": false,
+      "category": "maintenance",
+      "num_citations": 4
+    },
+    {
+      "query": "What CPU usage threshold triggers an alert?",
+      "expected": "monitoring.md",
+      "retrieved": [
+        "Monitoring_alerting.md",
+        "Incident_response.md",
+        "Logging_audit.md",
+        "Security_patching.md"
+      ],
+      "correct": false,
+      "category": "monitoring",
+      "num_citations": 4
+    },
+    {
+      "query": "How frequently are database backups performed?",
+      "expected": "backup_policy.md",
+      "retrieved": [
+        "Backup_recovery.md",
+        "Logging_audit.md",
+        "exam.md",
+        "Security_patching.md"
+      ],
+      "correct": false,
+      "category": "backup",
+      "num_citations": 4
+    }
+  ]
+}
