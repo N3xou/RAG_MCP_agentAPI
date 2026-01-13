@@ -1,0 +1,49 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # Redis for rate limiting state
+  redis:
+    image: redis:7-alpine
+    container_name: devops-agent-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - devops-network
+
+  # DevOps Agent API (optional - can run locally instead)
+  agent-api:
+    build: .
+    container_name: devops-agent-api
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - BASIC_RPM=10
+      - PRO_RPM=60
+      - VIP_RPM=300
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+      - ./devops.db:/app/devops.db
+    networks:
+      - devops-network
+    command: python agent_api.py
+
+volumes:
+  redis-data:
+
+networks:
+  devops-network:
+    driver: bridge
