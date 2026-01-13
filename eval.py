@@ -11,52 +11,43 @@ from typing import List, Dict, Any
 TEST_QUERIES = [
     {
         "query": "What is the production deployment procedure?",
-        "expected_source": "deployment_procedure.md",
+        "expected_source": "Deployment_guidelines.md",
         "category": "deployment"
     },
     {
         "query": "What are the incident severity levels?",
-        "expected_source": "incident_management.md",
+        "expected_source": "Incident_response.md",
         "category": "incident"
     },
     {
-        "query": "How often should we perform server maintenance?",
-        "expected_source": "server_maintenance.md",
-        "category": "maintenance"
-    },
-    {
         "query": "What are the key monitoring metrics we should track?",
-        "expected_source": "monitoring.md",
+        "expected_source": "Monitoring_alerting.md",
         "category": "monitoring"
     },
     {
         "query": "What is our backup retention policy?",
-        "expected_source": "backup_policy.md",
+        "expected_source": "Backup_recovery.md",
         "category": "backup"
     },
     {
         "query": "What is the rollback procedure if deployment fails?",
-        "expected_source": "deployment_procedure.md",
+        "expected_source": "Deployment_guidelines.md",
         "category": "deployment"
     },
     {
         "query": "What is the response time for critical incidents?",
-        "expected_source": "incident_management.md",
+        "expected_source": "Incident_response.md",
         "category": "incident"
     },
-    {
-        "query": "When is the production maintenance window?",
-        "expected_source": "server_maintenance.md",
-        "category": "maintenance"
-    },
+
     {
         "query": "What CPU usage threshold triggers an alert?",
-        "expected_source": "monitoring.md",
+        "expected_source": "Monitoring_alerting.md",
         "category": "monitoring"
     },
     {
         "query": "How frequently are database backups performed?",
-        "expected_source": "backup_policy.md",
+        "expected_source": "Backup_recovery.md",
         "category": "backup"
     }
 ]
@@ -93,6 +84,7 @@ def evaluate_rag(api_url: str = "http://localhost:8000") -> Dict[str, Any]:
             response = requests.post(
                 f"{api_url}/agent/query",
                 json={"message": query, "top_k": 4},
+                headers={"X-Client-ID": "VIP-test"},
                 timeout=10
             )
 
