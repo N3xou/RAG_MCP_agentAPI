@@ -164,49 +164,71 @@ class DevOpsOrchestrator:
         message = state["message"].lower()
         tool_calls = []
 
-        # Route to create_incident tool
-        if self._should_create_incident(message):
-            title = self._extract_incident_title(state["message"])
-            severity = self._extract_severity(state["message"])
-            assigned_to = self._extract_assigned_to(state["message"])
+        # -------------------------------
+        # Tool 1: create_ticket
+        # -------------------------------
+        if self._should_create_ticket(message):
+            summary = self._extract_incident_title(state["message"])
+            details = self._extract_incident_details(state["message"])
+            priority = self._extract_severity(state["message"])
 
-            result = self.mcp_client.call_tool('create_incident', {
-                'title': title,
-                'severity': severity,
-                'assigned_to': assigned_to
+            result = self.mcp_client.call_tool('create_ticket', {
+                'summary': summary,
+                'details': details,
+                'priority': priority
             })
-
             tool_calls.append({
-                'tool': 'create_incident',
+                'tool': 'create_ticket',
                 'input': {
-                    'title': title,
-                    'severity': severity,
-                    'assigned_to': assigned_to
+                    'summary': summary,
+                    'details': details,
+                    'priority': priority
                 },
                 'output': result
             })
-            print(f"✓ Created incident: ID={result.get('incident_id')}")
+            print(f"✓ Created ticket: ID={result.get('ticket_id')}")
 
-        # Route to lookup_server tool
-        if self._should_lookup_server(message):
-            hostname = self._extract_hostname(state["message"])
-            environment = self._extract_environment(state["message"])
+        # -------------------------------
+        # Tool 2: get_ticket
+        # -------------------------------
+        # Example: if message contains "show ticket 42"
+        ticket_id_match = re.search(r'ticket\s+(\d+)', message)
+        if ticket_id_match:
+            ticket_id = int(ticket_id_match.group(1))
+            result = self.mcp_client.call_tool('get_ticket', {'ticket_id': ticket_id})
 
-            lookup_params = {}
-            if hostname:
-                lookup_params['hostname'] = hostname
-            elif environment:
-                lookup_params['environment'] = environment
+            tool_calls.append({
+                'tool': 'get_ticket',
+                'input': {'ticket_id': ticket_id},
+                'output': result
+            })
+            print(f"✓ Retrieved ticket: ID={ticket_id}")
 
-            if lookup_params:
-                result = self.mcp_client.call_tool('lookup_server', lookup_params)
+        # -------------------------------
+        # Tool 3: append_note
+        # -------------------------------
+        # Example: "Add note 'Investigated issue' to ticket 42"
+        note_match = re.search(r'add note ["\'](.+?)["\'] to (ticket|deploy|server)-([\w\-]+)', message)
 
-                tool_calls.append({
-                    'tool': 'lookup_server',
-                    'input': lookup_params,
-                    'output': result
-                })
-                print(f"✓ Looked up server configuration")
+        if note_match:
+            note_text = note_match.group(1)
+            entity_type = note_match.group(2)
+            entity_id = f"{entity_type}-{note_match.group(3)}"
+
+            result = self.mcp_client.call_tool('append_note', {
+                'entity_id': entity_id,
+                'note': note_text
+            })
+
+            tool_calls.append({
+                'tool': 'append_note',
+                'input': {
+                    'entity_id': entity_id,
+                    'note': note_text
+                },
+                'output': result
+            })
+            print(f"✓ Appended note to {entity_id}: ID={result.get('note_id')}")
 
         state["tool_calls"] = tool_calls
         return state
@@ -307,7 +329,7 @@ class DevOpsOrchestrator:
         return "\n\n".join(results)
 
     # Tool routing helpers
-    def _should_create_incident(self, message: str) -> bool:
+    def _should_create_ticket(self, message: str) -> bool:
         """Check if message should trigger incident creation"""
         return any(kw in message for kw in ['create', 'open', 'file']) and \
             any(kw in message for kw in ['incident', 'ticket'])
@@ -319,19 +341,20 @@ class DevOpsOrchestrator:
 
     # Extraction helpers
     def _extract_incident_title(self, message: str) -> str:
-        """Extract incident title from message"""
-        # Try to extract text in quotes
+        """Extract summary/title from user message"""
         match = re.search(r'["\']([^"\']+)["\']', message)
         if match:
             return match.group(1)
-
-        # Try to extract after "for" or "about"
         match = re.search(r'(?:for|about)\s+(.+?)(?:\.|$)', message, re.I)
         if match:
             return match.group(1).strip()
-
-        # Fallback: use first 50 chars
         return message[:50]
+
+    def _extract_incident_details(self, message: str) -> str:
+        """Optional: extract longer details from message"""
+        # You can use everything after the title or after keywords like "details:"
+        match = re.search(r'details?:\s*(.+)', message, re.I)
+        return match.group(1).strip() if match else ""
 
     def _extract_severity(self, message: str) -> str:
         """Extract severity level from message"""
@@ -344,30 +367,6 @@ class DevOpsOrchestrator:
             return 'low'
         return 'medium'
 
-    def _extract_assigned_to(self, message: str) -> str:
-        """Extract assignee from message"""
-        match = re.search(r'assign(?:ed)?\s+to\s+([a-z]+)', message, re.I)
-        if match:
-            return match.group(1)
-        return ""
-
-    def _extract_hostname(self, message: str) -> str:
-        """Extract hostname from message (pattern: word-word-number)"""
-        match = re.search(r'\b([a-z]+-[a-z]+-\d+)\b', message, re.I)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_environment(self, message: str) -> str:
-        """Extract environment from message"""
-        message_lower = message.lower()
-        if 'production' in message_lower or 'prod' in message_lower:
-            return 'production'
-        elif 'staging' in message_lower:
-            return 'staging'
-        elif 'development' in message_lower or 'dev' in message_lower:
-            return 'development'
-        return None
 
     async def process_query(self, message: str, top_k: int = 4,
                             session_id: str = None) -> Dict[str, Any]:
